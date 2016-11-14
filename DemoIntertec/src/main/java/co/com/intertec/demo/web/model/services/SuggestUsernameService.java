@@ -1,5 +1,6 @@
 package co.com.intertec.demo.web.model.services;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -15,7 +16,7 @@ import co.com.intertec.demo.web.model.utils.Result;
 
 @Service
 @Transactional
-public class SuggestUsernameService {
+public class SuggestUsernameService implements SuggestUsername{
 
   @Autowired
   private SuggestUsernameDAO suggestUsernameDAO;
@@ -26,6 +27,11 @@ public class SuggestUsernameService {
   final java.util.Random rand = new java.util.Random();
   final Set<String> identifiers = new HashSet<>();
 
+  /**
+   * Genetat usernames
+   * @param cantidad total of letter to add to username
+   * @return 
+   */
   protected String generadorIdentifier(int cantidad) {
     StringBuilder builder = new StringBuilder();
     while (builder.toString().length() == 0) {
@@ -40,6 +46,9 @@ public class SuggestUsernameService {
     return builder.toString();
   }
 
+  /**
+   * this is main method called from controller
+   */
   public Result checkUsername(String username) {
 
     Result result = new Result();
@@ -67,7 +76,14 @@ public class SuggestUsernameService {
     Collections.sort(result.getUsernames());
     return result;
   }
-
+  
+  /**
+   * this method has the responsability to generate the unique username and suggest username depending on rules 
+   * @param object to complement ot reponse
+   * @param username username get in to user
+   * @param cantidad how much username need to generate
+   * @return result response of usernames
+   */
   protected Result generadorUsernames(Result result, String username, int cantidad) {
     int n = 0;
     int cantidadCaracteres = 0;
@@ -90,10 +106,15 @@ public class SuggestUsernameService {
     }
     return result;
   }
-
+  
+  /**
+   * This method valid that not iexist username in Mock List, or in other case this method would replace call database statement
+   * @param name username to validate
+   * @return return true or false
+   */
   private boolean existeUsername(String name) {
 
-    List<String> usernames = suggestUsernameDAO.getUsernamesMock();
+    List<String> usernames = getUsernamesMock();
     boolean existe = false;
     for (String username : usernames) {
       if (username.equals(name)) {
@@ -103,13 +124,18 @@ public class SuggestUsernameService {
     return existe;
   }
 
+  /**
+   * This method valid that not exits the username contains restricted words in Mock list or in other case this method would replace call database statement
+   * @param name Username to validate
+   * @return Object that contain answer if usernames is contains restricted word or not
+   */
   private ReponseValidateRestrictedWords validadRestrictWords(String name) {
 
     ReponseValidateRestrictedWords reponseValidateRestrictedWords = new ReponseValidateRestrictedWords();
-    List<String> restriectedWords = suggestUsernameDAO.getRestrictedWordsMock();
+    List<String> restriectedWords = getRestrictedWordsMock();
     boolean existeRestrictedWord = false;
     for (String restrictedWord : restriectedWords) {
-      if (name.contains(restrictedWord)) {
+      if (name.toUpperCase().contains(restrictedWord.toUpperCase())) {
         name = name.replace(restrictedWord, "");
         existeRestrictedWord = true;
       }
@@ -119,5 +145,42 @@ public class SuggestUsernameService {
 
     return reponseValidateRestrictedWords;
   }
+  
+  /**
+   * this method return List of restricted words
+   * @return List
+   */
+  public List<String> getRestrictedWordsMock() {
+
+    List<String> restrictedWords = new ArrayList<>();
+
+    restrictedWords.add("cannabis");
+    restrictedWords.add("abuse");
+    restrictedWords.add("crack");
+    restrictedWords.add("damn");
+    restrictedWords.add("drunk");
+    restrictedWords.add("grass");
+    restrictedWords.add("Fuck");
+    return restrictedWords;
+}
+  /**
+   * this method return list usernames mock
+   * @return List
+   */
+  public List<String> getUsernamesMock() {
+
+    List<String> usernames = new ArrayList<>();
+
+    usernames.add("gasper_lf");
+    usernames.add("gasper124");
+    usernames.add("gasper_lf12");
+    usernames.add("pepito");
+    usernames.add("carlos32");
+    usernames.add("ligia124");
+    usernames.add("Lewis");
+
+    return usernames;
+} 
+
 
 }
